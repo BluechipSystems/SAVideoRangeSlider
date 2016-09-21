@@ -25,6 +25,14 @@
 
 #import "SAVideoRangeSlider.h"
 
+#define SLIDER_BORDERS_SIZE 6.0f
+#define BG_VIEW_BORDERS_SIZE 3.0f
+
+#define kSATopBorderColor [UIColor colorWithRed: 0.996 green: 0.951 blue: 0.502 alpha: 1]
+#define kSABottomBorderColor [UIColor colorWithRed: 0.992 green: 0.902 blue: 0.004 alpha: 1]
+
+static const double kSADefaultThumbWidth = 35.0;
+
 @interface SAVideoRangeSlider ()
 
 @property (nonatomic, strong) AVAssetImageGenerator *imageGenerator;
@@ -41,38 +49,29 @@
 
 @implementation SAVideoRangeSlider
 
+@synthesize bottomBorderColor = _bottomBorderColor;
+@synthesize topBorderColor = _topBorderColor;
 
-#define SLIDER_BORDERS_SIZE 6.0f
-#define BG_VIEW_BORDERS_SIZE 3.0f
-
-
-- (id)initWithFrame:(CGRect)frame videoUrl:(NSURL *)videoUrl{
-    
+- (id)initWithFrame:(CGRect)frame asset:(AVAsset *)asset isPopoverEnabled:(BOOL)isPopoverEnabled {
     self = [super initWithFrame:frame];
     if (self) {
-        
+
         _frame_width = frame.size.width;
-        
+
         int thumbWidth = ceil(frame.size.width*0.05);
-        
+
         _bgView = [[UIControl alloc] initWithFrame:CGRectMake(thumbWidth-BG_VIEW_BORDERS_SIZE, 0, frame.size.width-(thumbWidth*2)+BG_VIEW_BORDERS_SIZE*2, frame.size.height)];
-        _bgView.layer.borderColor = [UIColor grayColor].CGColor;
         _bgView.layer.borderWidth = BG_VIEW_BORDERS_SIZE;
         [self addSubview:_bgView];
-        
-        _videoUrl = videoUrl;
-        
-        
+
         _topBorder = [[UIView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, SLIDER_BORDERS_SIZE)];
-        _topBorder.backgroundColor = [UIColor colorWithRed: 0.996 green: 0.951 blue: 0.502 alpha: 1];
+        _topBorder.backgroundColor = self.topBorderColor;
         [self addSubview:_topBorder];
-        
-        
+
         _bottomBorder = [[UIView alloc] initWithFrame:CGRectMake(0, frame.size.height-SLIDER_BORDERS_SIZE, frame.size.width, SLIDER_BORDERS_SIZE)];
-        _bottomBorder.backgroundColor = [UIColor colorWithRed: 0.992 green: 0.902 blue: 0.004 alpha: 1];
+        _bottomBorder.backgroundColor = self.bottomBorderColor;
         [self addSubview:_bottomBorder];
-        
-        
+
         _leftThumb = [[SASliderLeft alloc] initWithFrame:CGRectMake(0, 0, thumbWidth, frame.size.height)];
         _leftThumb.contentMode = UIViewContentModeLeft;
         _leftThumb.userInteractionEnabled = YES;
@@ -80,54 +79,65 @@
         _leftThumb.backgroundColor = [UIColor clearColor];
         _leftThumb.layer.borderWidth = 0;
         [self addSubview:_leftThumb];
-        
-        
+
         UIPanGestureRecognizer *leftPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLeftPan:)];
         [_leftThumb addGestureRecognizer:leftPan];
-        
-        
+
         _rightThumb = [[SASliderRight alloc] initWithFrame:CGRectMake(0, 0, thumbWidth, frame.size.height)];
-        
+
         _rightThumb.contentMode = UIViewContentModeRight;
         _rightThumb.userInteractionEnabled = YES;
         _rightThumb.clipsToBounds = YES;
         _rightThumb.backgroundColor = [UIColor clearColor];
         [self addSubview:_rightThumb];
-        
+
         UIPanGestureRecognizer *rightPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleRightPan:)];
         [_rightThumb addGestureRecognizer:rightPan];
-        
+
         _rightPosition = frame.size.width;
         _leftPosition = 0;
-        
-        
-        
-        
+
+        _playerPosition = 0.0;
+
+
         _centerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
         _centerView.backgroundColor = [UIColor clearColor];
         [self addSubview:_centerView];
-        
+
+        _playerPositionView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 2.0, frame.size.height)];
+        _playerPositionView.backgroundColor = [UIColor redColor];
+        [self addSubview:_playerPositionView];
+
         UIPanGestureRecognizer *centerPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleCenterPan:)];
         [_centerView addGestureRecognizer:centerPan];
-        
-        
-        _popoverBubble = [[SAResizibleBubble alloc] initWithFrame:CGRectMake(0, -50, 100, 50)];
-        _popoverBubble.alpha = 0;
-        _popoverBubble.backgroundColor = [UIColor clearColor];
-        [self addSubview:_popoverBubble];
-        
-        
-        _bubleText = [[UILabel alloc] initWithFrame:_popoverBubble.frame];
-        _bubleText.font = [UIFont boldSystemFontOfSize:20];
-        _bubleText.backgroundColor = [UIColor clearColor];
-        _bubleText.textColor = [UIColor blackColor];
-        _bubleText.textAlignment = UITextAlignmentCenter;
-        
-        [_popoverBubble addSubview:_bubleText];
-        
-        [self getMovieFrame];
+
+        if (isPopoverEnabled) {
+            _popoverBubble = [[SAResizibleBubble alloc] initWithFrame:CGRectMake(0, -50, 100, 50)];
+            _popoverBubble.alpha = 0;
+            _popoverBubble.backgroundColor = [UIColor clearColor];
+            [self addSubview:_popoverBubble];
+
+
+            _bubleText = [[UILabel alloc] initWithFrame:_popoverBubble.frame];
+            _bubleText.font = [UIFont boldSystemFontOfSize:20];
+            _bubleText.backgroundColor = [UIColor clearColor];
+            _bubleText.textColor = [UIColor blackColor];
+            _bubleText.textAlignment = NSTextAlignmentCenter;
+
+            [_popoverBubble addSubview:_bubleText];
+        }
+
+        [self getMovieFrameWithAsset:asset];
     }
-    
+
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)frame videoUrl:(NSURL *)videoUrl{
+    AVAsset *myAsset = [[AVURLAsset alloc] initWithURL:videoUrl options:nil];
+
+    self = [self initWithFrame:frame asset:myAsset isPopoverEnabled:YES];
+
     return self;
 }
 
@@ -156,6 +166,11 @@
     
 }
 
+- (void)seekTo:(CGFloat)timeInSeconds {
+    CGFloat position = _frame_width * (timeInSeconds/_durationSeconds);
+
+    [self.playerPositionView setCenter:CGPointMake(position, self.frame.size.height/2)];
+}
 
 -(void)setMaxGap:(NSInteger)maxGap{
     _leftPosition = 0;
@@ -178,11 +193,7 @@
     
 }
 
-
-
-
 #pragma mark - Gestures
-
 - (void)handleLeftPan:(UIPanGestureRecognizer *)gesture
 {
     if (gesture.state == UIGestureRecognizerStateBegan || gesture.state == UIGestureRecognizerStateChanged) {
@@ -326,9 +337,9 @@
 
 #pragma mark - Video
 
--(void)getMovieFrame{
+-(void)getMovieFrameWithAsset:(AVAsset *)asset {
     
-    AVAsset *myAsset = [[AVURLAsset alloc] initWithURL:_videoUrl options:nil];
+    AVAsset *myAsset = asset;
     self.imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:myAsset];
     
     if ([self isRetina]){
@@ -337,18 +348,18 @@
         self.imageGenerator.maximumSize = CGSizeMake(_bgView.frame.size.width, _bgView.frame.size.height);
     }
     
-    int picWidth = 20;
+    int picWidth = self.thumbWidth;
     
     // First image
     NSError *error;
     CMTime actualTime;
-    CGImageRef halfWayImage = [self.imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:&actualTime error:&error];
-    if (halfWayImage != NULL) {
+    CGImageRef firstThumbImage = [self.imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:&actualTime error:&error];
+    if (firstThumbImage != NULL) {
         UIImage *videoScreen;
         if ([self isRetina]){
-            videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage scale:2.0 orientation:UIImageOrientationUp];
+            videoScreen = [[UIImage alloc] initWithCGImage:firstThumbImage scale:2.0 orientation:UIImageOrientationUp];
         } else {
-            videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage];
+            videoScreen = [[UIImage alloc] initWithCGImage:firstThumbImage];
         }
         UIImageView *tmp = [[UIImageView alloc] initWithImage:videoScreen];
         CGRect rect=tmp.frame;
@@ -356,12 +367,10 @@
         tmp.frame=rect;
         [_bgView addSubview:tmp];
         picWidth = tmp.frame.size.width;
-        CGImageRelease(halfWayImage);
+        CGImageRelease(firstThumbImage);
     }
-    
-    
+
     _durationSeconds = CMTimeGetSeconds([myAsset duration]);
-    
     int picsCnt = ceil(_bgView.frame.size.width / picWidth);
     
     NSMutableArray *allTimes = [[NSMutableArray alloc] init];
@@ -375,9 +384,7 @@
             time4Pic = i*picWidth;
             
             CMTime timeFrame = CMTimeMakeWithSeconds(_durationSeconds*time4Pic/_bgView.frame.size.width, 600);
-            
             [allTimes addObject:[NSValue valueWithCMTime:timeFrame]];
-            
             
             CGImageRef halfWayImage = [self.imageGenerator copyCGImageAtTime:timeFrame actualTime:&actualTime error:&error];
             
@@ -436,45 +443,42 @@
         [allTimes addObject:[NSValue valueWithCMTime:timeFrame]];
     }
     
-    NSArray *times = allTimes;
-    
+    [self generateImagesForTimes:allTimes];
+}
+
+
+- (void)generateImagesForTimes:(NSArray *)times {
     __block int i = 1;
-    
+
     [self.imageGenerator generateCGImagesAsynchronouslyForTimes:times
                                               completionHandler:^(CMTime requestedTime, CGImageRef image, CMTime actualTime,
-                                                                  AVAssetImageGeneratorResult result, NSError *error) {
-                                                  
+                                                      AVAssetImageGeneratorResult result, NSError *error) {
                                                   if (result == AVAssetImageGeneratorSucceeded) {
-                                                      
-                                                      
                                                       UIImage *videoScreen;
-                                                      if ([self isRetina]){
+                                                      if ([self isRetina]) {
                                                           videoScreen = [[UIImage alloc] initWithCGImage:image scale:2.0 orientation:UIImageOrientationUp];
                                                       } else {
                                                           videoScreen = [[UIImage alloc] initWithCGImage:image];
                                                       }
-                                                      
-                                                      
+
                                                       UIImageView *tmp = [[UIImageView alloc] initWithImage:videoScreen];
-                                                      
-                                                      int all = (i+1)*tmp.frame.size.width;
-                                                      
-                                                      
+
+                                                      int all = (i + 1) * tmp.frame.size.width;
+
                                                       CGRect currentFrame = tmp.frame;
-                                                      currentFrame.origin.x = i*currentFrame.size.width;
-                                                      if (all > _bgView.frame.size.width){
+                                                      currentFrame.origin.x = i * currentFrame.size.width;
+                                                      if (all > _bgView.frame.size.width) {
                                                           int delta = all - _bgView.frame.size.width;
                                                           currentFrame.size.width -= delta;
                                                       }
                                                       tmp.frame = currentFrame;
                                                       i++;
-                                                      
+
                                                       dispatch_async(dispatch_get_main_queue(), ^{
                                                           [_bgView addSubview:tmp];
                                                       });
-                                                      
                                                   }
-                                                  
+
                                                   if (result == AVAssetImageGeneratorFailed) {
                                                       NSLog(@"Failed with error: %@", [error localizedDescription]);
                                                   }
@@ -483,9 +487,6 @@
                                                   }
                                               }];
 }
-
-
-
 
 #pragma mark - Properties
 
@@ -499,9 +500,6 @@
 {
     return _rightPosition * _durationSeconds / _frame_width;
 }
-
-
-
 
 #pragma mark - Bubble
 
@@ -553,8 +551,8 @@
     // time - seconds
     NSInteger min = floor(time / 60);
     NSInteger sec = floor(time - min * 60);
-    NSString *minStr = [NSString stringWithFormat:min >= 10 ? @"%i" : @"0%i", min];
-    NSString *secStr = [NSString stringWithFormat:sec >= 10 ? @"%i" : @"0%i", sec];
+    NSString *minStr = [NSString stringWithFormat:min >= 10 ? @"%li" : @"0%li", min];
+    NSString *secStr = [NSString stringWithFormat:sec >= 10 ? @"%li" : @"0%li", sec];
     return [NSString stringWithFormat:@"%@:%@", minStr, secStr];
 }
 
@@ -563,6 +561,42 @@
     return ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] &&
             
             ([UIScreen mainScreen].scale == 2.0));
+}
+
+#pragma mark -
+- (UIColor *)bottomBorderColor {
+    if (!_bottomBorderColor) {
+        _bottomBorderColor = kSABottomBorderColor;
+    }
+    return _bottomBorderColor;
+}
+
+- (void)setBottomBorderColor:(UIColor *)bottomBorderColor {
+    _bottomBorderColor = bottomBorderColor;
+
+    [self.bottomBorder setBackgroundColor:bottomBorderColor];
+}
+
+- (UIColor *)topBorderColor {
+    if (!_topBorderColor) {
+        _topBorderColor = kSATopBorderColor;
+    }
+
+    return _topBorderColor;
+}
+
+- (void)setTopBorderColor:(UIColor *)topBorderColor {
+    _topBorderColor = topBorderColor;
+
+    [self.topBorder setBackgroundColor:topBorderColor];
+}
+
+- (int)thumbWidth {
+    if (!_thumbWidth) {
+        _thumbWidth = kSADefaultThumbWidth;
+    }
+
+    return _thumbWidth;
 }
 
 

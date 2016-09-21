@@ -48,17 +48,26 @@
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     //// Color Declarations
-    UIColor* color5 = [UIColor colorWithRed: 0.992 green: 0.902 blue: 0.004 alpha: 1];
-    UIColor* gradientColor2 = [UIColor colorWithRed: 1 green: 1 blue: 1 alpha: 1];
-    UIColor* color6 = [UIColor colorWithRed: 0.196 green: 0.161 blue: 0.047 alpha: 1];
+    UIColor* fillColor = [UIColor colorWithRed: 0.945 green: 0.945 blue: 0.945 alpha: 1];
+    UIColor* strokeColor2 = [UIColor colorWithRed: 0.419 green: 0.417 blue: 0.417 alpha: 1];
+    UIColor* color3 = [UIColor colorWithRed: 0.667 green: 0.667 blue: 0.667 alpha: 1];
+    UIColor* color4 = [UIColor colorWithRed: 0.835 green: 0.835 blue: 0.857 alpha: 1];
     
     //// Gradient Declarations
-    NSArray* gradient3Colors = [NSArray arrayWithObjects:
-                                (id)gradientColor2.CGColor,
-                                (id)[UIColor colorWithRed: 0.996 green: 0.951 blue: 0.502 alpha: 1].CGColor,
-                                (id)color5.CGColor, nil];
-    CGFloat gradient3Locations[] = {0, 0, 0.49};
-    CGGradientRef gradient3 = CGGradientCreateWithColors(colorSpace, (__bridge CFArrayRef)gradient3Colors, gradient3Locations);
+    NSArray* gradientColors = [NSArray arrayWithObjects:
+                               (id)fillColor.CGColor,
+                               (id)[UIColor colorWithRed: 0.806 green: 0.806 blue: 0.806 alpha: 1].CGColor,
+                               (id)color3.CGColor, nil];
+    CGFloat gradientLocations[] = {0, 1, 1};
+    CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (__bridge CFArrayRef)gradientColors, gradientLocations);
+    NSArray* gradient2Colors = [NSArray arrayWithObjects:
+                                (id)color4.CGColor,
+                                (id)[UIColor colorWithRed: 0.627 green: 0.626 blue: 0.637 alpha: 1].CGColor,
+                                (id)strokeColor2.CGColor,
+                                (id)[UIColor colorWithRed: 0.419 green: 0.417 blue: 0.417 alpha: 1].CGColor,
+                                (id)strokeColor2.CGColor, nil];
+    CGFloat gradient2Locations[] = {0, 0, 0.74, 0.92, 1};
+    CGGradientRef gradient2 = CGGradientCreateWithColors(colorSpace, (__bridge CFArrayRef)gradient2Colors, gradient2Locations);
     
     //// Frames
     CGRect bubbleFrame = self.bounds;
@@ -70,7 +79,7 @@
     [roundedRectanglePath closePath];
     CGContextSaveGState(context);
     [roundedRectanglePath addClip];
-    CGContextDrawLinearGradient(context, gradient3,
+    CGContextDrawLinearGradient(context, gradient,
                                 CGPointMake(CGRectGetMidX(roundedRectangleRect), CGRectGetMinY(roundedRectangleRect)),
                                 CGPointMake(CGRectGetMidX(roundedRectangleRect), CGRectGetMaxY(roundedRectangleRect)),
                                 0);
@@ -80,42 +89,59 @@
     [roundedRectanglePath stroke];
     
     
-    //// Bezier 3 Drawing
-    UIBezierPath* bezier3Path = [UIBezierPath bezierPath];
-    [bezier3Path moveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.42806 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
-    [bezier3Path addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.42806 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.74629 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.42806 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.42806 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame))];
-    [bezier3Path addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.35577 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.74629 * CGRectGetHeight(bubbleFrame))];
-    [bezier3Path addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.35577 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.35577 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.35577 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame))];
-    [bezier3Path addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.42806 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
-    [bezier3Path closePath];
-    bezier3Path.miterLimit = 19;
+    //// Bezier 2 Drawing
+    UIBezierPath* bezier2Path = [UIBezierPath bezierPath];
+    [bezier2Path moveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.68668 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
+    [bezier2Path addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.68668 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.76552 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.68668 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.68668 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame))];
+    [bezier2Path addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.76552 * CGRectGetHeight(bubbleFrame))];
+    [bezier2Path addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame))];
+    [bezier2Path addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.68668 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
+    [bezier2Path closePath];
+    bezier2Path.miterLimit = 19;
     
-    [color6 setFill];
-    [bezier3Path fill];
+    CGContextSaveGState(context);
+    [bezier2Path addClip];
+    CGRect bezier2Bounds = CGPathGetPathBoundingBox(bezier2Path.CGPath);
+    CGContextDrawLinearGradient(context, gradient2,
+                                CGPointMake(CGRectGetMinX(bezier2Bounds), CGRectGetMidY(bezier2Bounds)),
+                                CGPointMake(CGRectGetMaxX(bezier2Bounds), CGRectGetMidY(bezier2Bounds)),
+                                0);
+    CGContextRestoreGState(context);
     
     
     //// Bezier Drawing
     UIBezierPath* bezierPath = [UIBezierPath bezierPath];
-    [bezierPath moveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.66944 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
-    [bezierPath addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.66944 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.74629 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.66944 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.66944 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame))];
-    [bezierPath addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.74629 * CGRectGetHeight(bubbleFrame))];
-    [bezierPath addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.59715 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.69415 * CGRectGetHeight(bubbleFrame))];
-    [bezierPath addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.66944 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
+    [bezierPath moveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.47978 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
+    [bezierPath addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.47978 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.76552 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.47978 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.47978 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame))];
+    [bezierPath addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.39025 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.76552 * CGRectGetHeight(bubbleFrame))];
+    [bezierPath addCurveToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.39025 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame)) controlPoint1: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.39025 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame)) controlPoint2: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.39025 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.71146 * CGRectGetHeight(bubbleFrame))];
+    [bezierPath addLineToPoint: CGPointMake(CGRectGetMinX(bubbleFrame) + 0.47978 * CGRectGetWidth(bubbleFrame), CGRectGetMinY(bubbleFrame) + 0.22486 * CGRectGetHeight(bubbleFrame))];
     [bezierPath closePath];
     bezierPath.miterLimit = 19;
     
-    [color6 setFill];
-    [bezierPath fill];
+    CGContextSaveGState(context);
+    [bezierPath addClip];
+    CGRect bezierBounds = CGPathGetPathBoundingBox(bezierPath.CGPath);
+    CGContextDrawLinearGradient(context, gradient2,
+                                CGPointMake(CGRectGetMinX(bezierBounds), CGRectGetMidY(bezierBounds)),
+                                CGPointMake(CGRectGetMaxX(bezierBounds), CGRectGetMidY(bezierBounds)),
+                                0);
+    CGContextRestoreGState(context);
     
     
     //// Cleanup
-    CGGradientRelease(gradient3);
+    CGGradientRelease(gradient);
+    CGGradientRelease(gradient2);
     CGColorSpaceRelease(colorSpace);
     
+
     
+
     
+
     
-    
+
+
 }
 
 
