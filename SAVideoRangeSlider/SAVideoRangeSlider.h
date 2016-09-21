@@ -40,16 +40,35 @@
 @property (nonatomic, weak) id <SAVideoRangeSliderDelegate> delegate;
 @property (nonatomic) CGFloat leftPosition;
 @property (nonatomic) CGFloat rightPosition;
+
+/**
+ * Use this property to set currently used value. It works like player slider.
+ */
+@property (nonatomic) CGFloat playerPosition;
 @property (nonatomic, strong) UILabel *bubleText;
+
+/**
+ * View which display currently used value
+ */
+@property (nonatomic, strong) UIView *playerPositionView;
 @property (nonatomic, strong) UIView *topBorder;
 @property (nonatomic, strong) UIView *bottomBorder;
 @property (nonatomic, assign) NSInteger maxGap;
 @property (nonatomic, assign) NSInteger minGap;
 
-
+- (id)initWithFrame:(CGRect)frame asset:(AVAsset *)asset isPopoverEnabled:(BOOL)isPopoverEnabled;
 - (id)initWithFrame:(CGRect)frame videoUrl:(NSURL *)videoUrl;
 - (void)setPopoverBubbleSize: (CGFloat) width height:(CGFloat)height;
 
+/// set current position to given time
+- (void)seekTo:(CGFloat)timeInSeconds;
+
+@property (nonatomic, strong) UIColor *topBorderColor;
+@property (nonatomic, strong) UIColor *bottomBorderColor;
+
+@property (nonatomic, assign) BOOL isPopoverEnabled;
+
+@property (nonatomic, assign) int thumbWidth;
 
 @end
 
