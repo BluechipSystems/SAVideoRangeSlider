@@ -30,6 +30,7 @@
 
 #define kSATopBorderColor [UIColor colorWithRed: 0.996 green: 0.951 blue: 0.502 alpha: 1]
 #define kSABottomBorderColor [UIColor colorWithRed: 0.992 green: 0.902 blue: 0.004 alpha: 1]
+#define kSADefaultOvelayColor [[UIColor blackColor] colorWithAlphaComponent:0.7]
 
 static const double kSADefaultThumbWidth = 35.0;
 
@@ -126,6 +127,14 @@ static const double kSADefaultThumbWidth = 35.0;
 
             [_popoverBubble addSubview:_bubleText];
         }
+
+        _leftOverlayView = [UIView new];
+        _leftOverlayView.backgroundColor = self.overlayColor;
+        [self addSubview:_leftOverlayView];
+
+        _rightOverlayView = [UIView new];
+        _rightOverlayView.backgroundColor = self.overlayColor;
+        [self addSubview:_rightOverlayView];
 
         [self getMovieFrameWithAsset:asset];
     }
@@ -325,7 +334,9 @@ static const double kSADefaultThumbWidth = 35.0;
     
     
     _centerView.frame = CGRectMake(_leftThumb.frame.origin.x + _leftThumb.frame.size.width, _centerView.frame.origin.y, _rightThumb.frame.origin.x - _leftThumb.frame.origin.x - _leftThumb.frame.size.width, _centerView.frame.size.height);
-    
+
+    _leftOverlayView.frame = CGRectMake(0, 0, CGRectGetMinX(_leftThumb.frame), CGRectGetHeight(self.frame));
+    _rightOverlayView.frame = CGRectMake(CGRectGetMaxX(_rightThumb.frame), 0, CGRectGetMaxX(self.frame) - CGRectGetMaxX(_rightThumb.frame), CGRectGetHeight(self.frame));
     
     CGRect frame = _popoverBubble.frame;
     frame.origin.x = _centerView.frame.origin.x+_centerView.frame.size.width/2-frame.size.width/2;
@@ -597,6 +608,14 @@ static const double kSADefaultThumbWidth = 35.0;
     }
 
     return _thumbWidth;
+}
+
+- (UIColor *)overlayColor {
+    if (!_overlayColor) {
+        _overlayColor = kSADefaultOvelayColor;
+    }
+
+    return _overlayColor;
 }
 
 
