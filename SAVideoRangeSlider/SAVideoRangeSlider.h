@@ -56,14 +56,11 @@
 @property (nonatomic, assign) NSInteger maxGap;
 @property (nonatomic, assign) NSInteger minGap;
 
-<<<<<<< HEAD
-=======
 @property (nonatomic, strong) UIView *leftOverlayView;
 @property (nonatomic, strong) UIView *rightOverlayView;
 
 @property (nonatomic, strong) UIColor *overlayColor;
 
->>>>>>> develop
 - (id)initWithFrame:(CGRect)frame asset:(AVAsset *)asset isPopoverEnabled:(BOOL)isPopoverEnabled;
 - (id)initWithFrame:(CGRect)frame videoUrl:(NSURL *)videoUrl;
 - (void)setPopoverBubbleSize: (CGFloat) width height:(CGFloat)height;
