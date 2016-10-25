@@ -352,7 +352,8 @@ static const double kSADefaultThumbWidth = 35.0;
     
     AVAsset *myAsset = asset;
     self.imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:myAsset];
-    
+    self.imageGenerator.appliesPreferredTrackTransform = YES;
+
     if ([self isRetina]){
         self.imageGenerator.maximumSize = CGSizeMake(_bgView.frame.size.width*2, _bgView.frame.size.height*2);
     } else {
