@@ -42,7 +42,6 @@ static const double kSADefaultThumbWidth = 35.0;
 @property (nonatomic, strong) NSURL *videoUrl;
 @property (nonatomic, strong) SASliderLeft *leftThumb;
 @property (nonatomic, strong) SASliderRight *rightThumb;
-@property (nonatomic) CGFloat frame_width;
 @property (nonatomic) Float64 durationSeconds;
 @property (nonatomic, strong) SAResizibleBubble *popoverBubble;
 
@@ -57,9 +56,7 @@ static const double kSADefaultThumbWidth = 35.0;
     self = [super initWithFrame:frame];
     if (self) {
 
-        _frame_width = frame.size.width;
-
-        int thumbWidth = ceil(frame.size.width*0.05);
+        CGFloat thumbWidth = ceil(frame.size.width*0.05);
 
         _bgView = [[UIControl alloc] initWithFrame:CGRectMake(thumbWidth-BG_VIEW_BORDERS_SIZE, 0, frame.size.width-(thumbWidth*2)+BG_VIEW_BORDERS_SIZE*2, frame.size.height)];
         _bgView.layer.borderWidth = BG_VIEW_BORDERS_SIZE;
@@ -95,8 +92,10 @@ static const double kSADefaultThumbWidth = 35.0;
         UIPanGestureRecognizer *rightPan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleRightPan:)];
         [_rightThumb addGestureRecognizer:rightPan];
 
-        _rightPosition = frame.size.width;
-        _leftPosition = 0;
+        
+        CGRect bgFrame = _bgView.frame;
+        _rightPosition = bgFrame.origin.x + bgFrame.size.width;
+        _leftPosition = bgFrame.origin.x;
 
         _playerPosition = 0.0;
 
@@ -105,7 +104,7 @@ static const double kSADefaultThumbWidth = 35.0;
         _centerView.backgroundColor = [UIColor clearColor];
         [self addSubview:_centerView];
 
-        _playerPositionView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 2.0, frame.size.height)];
+        _playerPositionView = [[UIView alloc] initWithFrame:CGRectMake(bgFrame.origin.x, 0, 2.0, frame.size.height)];
         _playerPositionView.backgroundColor = [UIColor redColor];
         [self addSubview:_playerPositionView];
 
@@ -176,21 +175,30 @@ static const double kSADefaultThumbWidth = 35.0;
 }
 
 - (void)seekTo:(CGFloat)timeInSeconds {
-    CGFloat position = _frame_width * (timeInSeconds/_durationSeconds);
-
+    
+    CGRect bgFrame = _bgView.frame;
+    CGFloat position = bgFrame.origin.x + bgFrame.size.width * (timeInSeconds/_durationSeconds);
     [self.playerPositionView setCenter:CGPointMake(position, self.frame.size.height/2)];
 }
 
 -(void)setMaxGap:(NSInteger)maxGap{
-    _leftPosition = 0;
-    _rightPosition = _frame_width*maxGap/_durationSeconds;
+    
+    CGRect bgFrame = _bgView.frame;
+    _leftPosition = bgFrame.origin.x;
+    _rightPosition = bgFrame.size.width*maxGap/_durationSeconds;
     _maxGap = maxGap;
 }
 
 -(void)setMinGap:(NSInteger)minGap{
-    _leftPosition = 0;
-    _rightPosition = _frame_width*minGap/_durationSeconds;
+    
+    CGRect bgFrame = _bgView.frame;
+    _leftPosition = bgFrame.origin.x;
+    _rightPosition = bgFrame.size.width*minGap/_durationSeconds;
     _minGap = minGap;
+}
+
+-(CGFloat)defaultMinGap{
+    return _leftThumb.frame.size.width * 0.5;
 }
 
 
@@ -210,17 +218,20 @@ static const double kSADefaultThumbWidth = 35.0;
         CGPoint translation = [gesture translationInView:self];
         
         _leftPosition += translation.x;
-        if (_leftPosition < 0) {
-            _leftPosition = 0;
+        
+        CGRect bgFrame = self.bgView.frame;
+        if (_leftPosition < bgFrame.origin.x) {
+            _leftPosition = bgFrame.origin.x;
         }
         
         if (
-            (_rightPosition-_leftPosition <= _leftThumb.frame.size.width+_rightThumb.frame.size.width) ||
+            (_rightPosition-_leftPosition <= [self defaultMinGap]) ||
             ((self.maxGap > 0) && (self.rightPosition-self.leftPosition > self.maxGap)) ||
             ((self.minGap > 0) && (self.rightPosition-self.leftPosition < self.minGap))
             ){
             _leftPosition -= translation.x;
         }
+        
         
         [gesture setTranslation:CGPointZero inView:self];
         
@@ -247,19 +258,22 @@ static const double kSADefaultThumbWidth = 35.0;
         
         CGPoint translation = [gesture translationInView:self];
         _rightPosition += translation.x;
-        if (_rightPosition < 0) {
-            _rightPosition = 0;
+        
+        CGRect bgFrame = self.bgView.frame;
+        
+        if (_rightPosition < bgFrame.origin.x) {
+            _rightPosition = bgFrame.origin.x;
         }
         
-        if (_rightPosition > _frame_width){
-            _rightPosition = _frame_width;
+        if (_rightPosition > bgFrame.origin.x + bgFrame.size.width){
+            _rightPosition = bgFrame.origin.x + bgFrame.size.width;
         }
         
         if (_rightPosition-_leftPosition <= 0){
             _rightPosition -= translation.x;
         }
         
-        if ((_rightPosition-_leftPosition <= _leftThumb.frame.size.width+_rightThumb.frame.size.width) ||
+        if ((_rightPosition-_leftPosition <= [self defaultMinGap]) ||
             ((self.maxGap > 0) && (self.rightPosition-self.leftPosition > self.maxGap)) ||
             ((self.minGap > 0) && (self.rightPosition-self.leftPosition < self.minGap))){
             _rightPosition -= translation.x;
@@ -295,11 +309,11 @@ static const double kSADefaultThumbWidth = 35.0;
         _leftPosition += translation.x;
         _rightPosition += translation.x;
         
-        if (_rightPosition > _frame_width || _leftPosition < 0){
+        CGRect bgFrame = _bgView.frame;
+        if (_rightPosition > (bgFrame.origin.x + bgFrame.size.width) || _leftPosition < bgFrame.origin.x){
             _leftPosition -= translation.x;
             _rightPosition -= translation.x;
         }
-        
         
         [gesture setTranslation:CGPointZero inView:self];
         
@@ -324,9 +338,9 @@ static const double kSADefaultThumbWidth = 35.0;
 {
     CGFloat inset = _leftThumb.frame.size.width / 2;
     
-    _leftThumb.center = CGPointMake(_leftPosition+inset, _leftThumb.frame.size.height/2);
+    _leftThumb.center = CGPointMake(_leftPosition-inset, _leftThumb.frame.size.height/2);
     
-    _rightThumb.center = CGPointMake(_rightPosition-inset, _rightThumb.frame.size.height/2);
+    _rightThumb.center = CGPointMake(_rightPosition+inset, _rightThumb.frame.size.height/2);
     
     _topBorder.frame = CGRectMake(_leftThumb.frame.origin.x + _leftThumb.frame.size.width, 0, _rightThumb.frame.origin.x - _leftThumb.frame.origin.x - _leftThumb.frame.size.width/2, SLIDER_BORDERS_SIZE);
     
@@ -394,12 +408,12 @@ static const double kSADefaultThumbWidth = 35.0;
         int prefreWidth=0;
         for (int i=1, ii=1; i<picsCnt; i++){
             time4Pic = i*picWidth;
-            
-            CMTime timeFrame = CMTimeMakeWithSeconds(_durationSeconds*time4Pic/_bgView.frame.size.width, 600);
+            Float64 seconds = _durationSeconds*time4Pic/_bgView.frame.size.width;
+            CMTime timeFrame = CMTimeMakeWithSeconds(seconds, 600);
             [allTimes addObject:[NSValue valueWithCMTime:timeFrame]];
             
             CGImageRef halfWayImage = [self.imageGenerator copyCGImageAtTime:timeFrame actualTime:&actualTime error:&error];
-            
+
             UIImage *videoScreen;
             if ([self isRetina]){
                 videoScreen = [[UIImage alloc] initWithCGImage:halfWayImage scale:2.0 orientation:UIImageOrientationUp];
@@ -504,13 +518,16 @@ static const double kSADefaultThumbWidth = 35.0;
 
 - (CGFloat)leftPosition
 {
-    return _leftPosition * _durationSeconds / _frame_width;
+    CGRect bgFrame = _bgView.frame;
+    return (_leftPosition - bgFrame.origin.x) * (_durationSeconds / bgFrame.size.width);
+
 }
 
 
 - (CGFloat)rightPosition
 {
-    return _rightPosition * _durationSeconds / _frame_width;
+    CGRect bgFrame = _bgView.frame;
+    return (_rightPosition - bgFrame.origin.x) * (_durationSeconds / bgFrame.size.width);
 }
 
 #pragma mark - Bubble
